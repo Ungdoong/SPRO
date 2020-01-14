@@ -1,2 +1,1 @@
-# SPRO
-Online Study Website
+front-dev read me
