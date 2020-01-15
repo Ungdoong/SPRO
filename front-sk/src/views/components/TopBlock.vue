@@ -1,6 +1,6 @@
 <template>
     <section class="section-hero section-shaped my-0">
-        <div class="shape shape-style-1 shape-default">
+        <div class="shape shape-style-1 shape-dark">
             <span class="span-150"></span>
             <span class="span-50"></span>
             <span class="span-50"></span>
@@ -32,6 +32,7 @@
                                          icon="ni ni-cloud-download-95">
                                 Download Vue
                             </base-button>
+                            <br><br>
                         </div>
                     </div>
                 </div>

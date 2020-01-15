@@ -1,13 +1,9 @@
 import Vue from "vue";
 import Router from "vue-router";
-import AppHeader from "./layout/AppHeader";
-import AppFooter from "./layout/AppFooter";
+import Header from "./layout/Header";
+import Footer from "./layout/Footer";
 import Components from "./views/Components.vue";
-import Landing from "./views/Landing.vue";
-import Login from "./views/Login.vue";
-import Register from "./views/Register.vue";
-import Profile from "./views/Profile.vue";
-import Intro from "./views/Intro"
+import Starter from "./views/Starter"
 
 Vue.use(Router);
 
@@ -16,10 +12,10 @@ export default new Router({
     linkExactActiveClass: "active",
     routes: [{
             path: "/",
-            name: "intro",
+            name: "starter",
             components: {
                 header: null,
-                default: Intro,
+                default: Starter,
                 footer: null
             }
         },
@@ -27,45 +23,9 @@ export default new Router({
             path: "/main",
             name: "main",
             components: {
-                header: AppHeader,
+                header: Header,
                 default: Components,
-                footer: AppFooter
-            }
-        },
-        {
-            path: "/landing",
-            name: "landing",
-            components: {
-                header: AppHeader,
-                default: Landing,
-                footer: AppFooter
-            }
-        },
-        {
-            path: "/login",
-            name: "login",
-            components: {
-                header: AppHeader,
-                default: Login,
-                footer: AppFooter
-            }
-        },
-        {
-            path: "/register",
-            name: "register",
-            components: {
-                header: AppHeader,
-                default: Register,
-                footer: AppFooter
-            }
-        },
-        {
-            path: "/profile",
-            name: "profile",
-            components: {
-                header: AppHeader,
-                default: Profile,
-                footer: AppFooter
+                footer: Footer
             }
         }
     ],
