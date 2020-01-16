@@ -1,32 +1,17 @@
-/*!
-
-=========================================================
-* Vue Argon Design System - v1.1.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-design-system
-* Copyright 2019 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-design-system/blob/master/LICENSE.md)
-
-* Coded by www.creative-tim.com
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-import store from "./store"
-import StudyPro from "./plugins/studyPro";
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+import studyPro from './plugins/studyPro';
+import vuetify from './plugins/vuetify'
 import './registerServiceWorker'
 
-Vue.config.productionTip = false;
-Vue.use(StudyPro);
+Vue.config.productionTip = false
 
 new Vue({
     router,
     store,
+    vuetify,
+    studyPro,
     render: h => h(App)
-}).$mount("#app");
+}).$mount('#app')
