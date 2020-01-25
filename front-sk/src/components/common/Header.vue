@@ -72,9 +72,10 @@
 
     <!-- Login Modal Boxs -->
     <v-dialog v-model="loginModal" max-width="600px">
-      <v-card id="lgiModal" class="px-0 pt-0">
+      <v-card id="lgiModal" class="px-0 pt-0"
+              style="opacity: 0.9">
         <v-card-title class="customTheme darken-2 white--text pb-3">
-          <span class="headline">Log In</span>
+          <span class="headline">Sign In</span>
         </v-card-title>
         <v-card-text class="py-0 px-7">
           <v-container class="pb-0">
@@ -118,7 +119,8 @@
     </v-dialog>
 
     <!-- Navigation Bar -->
-    <v-navigation-drawer app right v-model="drawer" color="rgba(100,100,100, .85">
+    <v-navigation-drawer app right v-model="drawer" color="rgba(100,100,100, .85"
+      disable-resize-watcher>
       <div>
         <v-layout column transparent>
           <v-flex class="mt-2">
