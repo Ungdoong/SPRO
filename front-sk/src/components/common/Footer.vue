@@ -1,5 +1,5 @@
 <template>
-  <v-content app>
+  <v-content app class="pa-0">
     <v-btn
       v-scroll="onScroll"
       v-show="toTopBtn"
