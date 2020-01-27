@@ -5,7 +5,7 @@ import home from '@/views/Home'
 import appHeader from '@/components/common/Header'
 import appFooter from '@/components/common/Footer'
 import studySearch from '@/views/StudySearch'
-import join from '@/components/user/Join'
+import signup from '@/components/user/Signup'
 import mypage from '@/components/user/Mypage'
 import workspace from '@/components/WorkSpace'
 
@@ -39,11 +39,11 @@ const routes = [{
         }
     },
     {
-        path: '/join',
-        name: 'join',
+        path: '/signup',
+        name: 'signup',
         components: {
             header: appHeader,
-            default: join,
+            default: signup,
             footer: appFooter
         }
     },

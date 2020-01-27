@@ -47,16 +47,27 @@
       </v-btn>
       <v-btn
         class="mt-1 black--text d-none d-sm-flex transparent"
-        to="/join"
+        to="/signup"
         elevation="0"
         text
         v-if="!$store.state.isAuth"
       >
         <span>Sign Up</span>
       </v-btn>
-      <v-avatar v-else>
-        <v-icon>mdi-account-circle</v-icon>
-      </v-avatar>
+
+      <!-- 유저 이미지 -->
+      <v-expansion-panels v-else>
+        <v-expansion-panel>
+          <v-expansion-panel-header class="pa-0">
+            <v-avatar class="wrap-contents">
+              <v-icon class="wrap-contents">mdi-account-circle</v-icon>
+            </v-avatar>
+            <span>닉네임</span>
+          </v-expansion-panel-header>
+        </v-expansion-panel>
+      </v-expansion-panels>
+      <!-- 유저 이미지 끝 -->
+
       <v-app-bar-nav-icon @click="drawer = true"
         class="d-block d-sm-none"></v-app-bar-nav-icon>
 
@@ -146,12 +157,11 @@
           <v-flex> </v-flex>
         </v-layout>
         <v-list>
-          <v-list-item
-            v-for="item in userpages"
-            :key="item.title"
-            :to="item.route"
-          >
-            <v-list-item-content>
+          <v-list-item>
+            <v-list-item-content
+              v-for="item in userpages"
+              :key="item.title"
+              :to="item.route">
               <v-list-item-title class="white--text underlined">{{
                 item.title
               }}</v-list-item-title>
@@ -164,7 +174,7 @@
       <template v-slot:append>
         <v-card-actions class="justify-center" v-if="!$store.state.isAuth">
           <v-btn text class="pink--text" @click="signinModal=true">Sign in</v-btn>
-          <v-btn text class="pink--text transparent" elevation="0" to="/join">Sign up</v-btn>
+          <v-btn text class="pink--text transparent" elevation="0" to="/signup">Sign up</v-btn>
         </v-card-actions>
         <v-card-actions class="justify-center" v-else>
           <v-btn text class="pink--text" >Sign out</v-btn>
@@ -226,5 +236,10 @@ export default {
 
 #navDrawer {
   opacity: 0.8;
+}
+
+.userPanel {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>

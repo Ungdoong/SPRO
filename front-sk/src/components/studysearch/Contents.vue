@@ -183,7 +183,7 @@
     </v-row>
 
     <!-- 결과 테이블 -->
-    <v-card max-width="100%" class="mx-auto">
+    <v-card class="mx-10">
       <v-toolbar color="red lighten-3" dark>
         <v-toolbar-title>Search Results</v-toolbar-title>
       </v-toolbar>
