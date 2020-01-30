@@ -40,7 +40,7 @@
       <v-btn
         class="mt-1 d-none d-sm-flex"
         @click="signinModal = true"
-        v-if="!$store.state.isAuth"
+        v-if="!isAuth"
         text
       >
         <span>Sign In</span>
@@ -50,7 +50,7 @@
         to="/signup"
         elevation="0"
         text
-        v-if="!$store.state.isAuth"
+        v-if="!isAuth"
       >
         <span>Sign Up</span>
       </v-btn>
@@ -64,14 +64,14 @@
           <v-avatar>
             <v-icon>mdi-account-circle</v-icon>
           </v-avatar>
-          <span class="mr-2 grey--text" >[nickname]</span> 
+          <span class="mr-2 grey--text" >{{userNickname}}</span> 
           <svg viewBox="0 0 451.847 451.847" width="12"><path d="M225.923,354.706c-8.098,0-16.195-3.092-22.369-9.263L9.27,151.157c-12.359-12.359-12.359-32.397,0-44.751
 		c12.354-12.354,32.388-12.354,44.748,0l171.905,171.915l171.906-171.909c12.359-12.354,32.391-12.354,44.744,0
 		c12.365,12.354,12.365,32.392,0,44.751L248.292,345.449C242.115,351.621,234.018,354.706,225.923,354.706z" fill="rgba(200,200,200,.7)"/></svg>
           <div :class="{ usermenu }" class="userdropdown">
             <ul class="pl-0">
               <li v-for="item in usermenuitems" :key="item.title">
-                <a href="item.route" target="_blank" class="black--text subtitle-1 pl-5">{{ item.title }}</a>
+                <a :href="item.route" class="black--text subtitle-1 pl-5">{{ item.title }}</a>
               </li>
             </ul>
           </div>
@@ -150,7 +150,7 @@
       </v-list>
 
       <!-- User Pages -->
-      <v-container class="my-0 pa-0" v-if="$store.state.isAuth">
+      <v-container class="my-0 pa-0" v-if="isAuth">
         <v-content text disabled class="grey--text text-center mx-4 mb-4 pa-0"
           >User Pages
           <hr
@@ -184,7 +184,7 @@
       <v-container v-else>
       </v-container>
       <template v-slot:append>
-        <v-card-actions class="justify-center" v-if="!$store.state.isAuth">
+        <v-card-actions class="justify-center" v-if="!isAuth">
           <v-btn text class="pink--text" @click="signinModal=true">Sign in</v-btn>
           <v-btn text class="pink--text transparent" elevation="0" to="/signup">Sign up</v-btn>
         </v-card-actions>
@@ -227,6 +227,14 @@ export default {
         { title: "Calendar", route: "/calendar"},
       ]
     };
+  },
+  computed: {
+    isAuth: function() {
+      return this.$store.getters.isAuth;
+    },
+    userNickname: function() {
+      return this.$store.getters.userNickname;
+    },
   },
   components: {
     signinModal: () => import("@/components/user/SigninModal")

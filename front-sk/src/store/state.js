@@ -1,6 +1,6 @@
 export default {
-    uid: '',
-    token: '',
-    isAuth: false,
-    userNickname: 'Unknown'
+    uid: {},
+    token: "",
+    user: {},
+    userNickname: {}
 }

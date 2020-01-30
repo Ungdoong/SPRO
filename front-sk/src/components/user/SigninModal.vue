@@ -18,12 +18,7 @@
               </v-text-field>
             </v-col>
             <v-col cols="12" class="py-0">
-              <v-text-field
-                required
-                :rules="passwordRules"
-                type="password"
-                v-model="password"
-              >
+              <v-text-field required :rules="passwordRules" type="password" v-model="password">
                 <template v-slot:label>
                   <strong>
                     <v-icon style="vertical-align: middle">lock</v-icon>
@@ -31,6 +26,12 @@
                   Password
                 </template>
               </v-text-field>
+            </v-col>
+            <v-col class="pa-0 pl-4">
+              <a id="kakao-login-btn"></a>
+              <button class="social-btn mr-4" @click="AuthKakaoSignin('kakao')" style="width:50px">
+                <v-img src="@/assets/images/social-btn/kakaolink_btn_medium.png"></v-img>
+              </button>
             </v-col>
             <v-checkbox
               id="modalCheckbox"
@@ -46,30 +47,32 @@
       </v-card-text>
       <v-card-actions class="pt-0 pr-5">
         <v-spacer></v-spacer>
-        <v-btn
-          color="error--text lighten-1 transparent"
-          @click="close"
-          elevation="0"
-          >Close</v-btn
-        >
+        <v-btn color="error--text lighten-1 transparent" @click="close" elevation="0">Close</v-btn>
         <v-btn color="transparent" @click="signin" elevation="0">Sign in</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
+
 <script>
-import { mapActions } from 'vuex'
+import { mapState } from "vuex";
+import { mapActions } from "vuex";
+import WbKakao from "@/social-signin/kakao/kakao";
+
 
 export default {
   data: () => ({
     signinRemain: false,
     open: false,
     idRules: [v => !!v || "아이디를 입력해 주세요."],
-    passwordRules: [v => !!v || "비밀번호를 입력해 주세요."],
+    passwordRules: [v => !!v || "비밀번호를   입력해 주세요."],
     id: "",
-    password: ""
+    password: "",
   }),
+  computed: {
+    ...mapState(["token"])
+  },
   props: ["signinModal"],
   watch: {
     signinModal() {
@@ -81,21 +84,43 @@ export default {
       }
     }
   },
+  mounted() {
+
+  },
   methods: {
-    ...mapActions(['login']),
-    async onLogin () {
-      try {
-        let loginResult = await this.login({email: this.email, password: this.password})
-        console.log('LR = ' +loginResult)
-      } catch (err) {
-        console.error(err)
-      }
-    },
+    ...mapActions(["socialLogin", "logout", "login"]),
     close() {
       this.$emit("close");
     },
-    signin(){
-      this.onLogin();
+    signin() {
+      this.login({
+        email: this.id,
+        password: this.password
+      });
+    },
+    async AuthKakaoSignin() {
+      const user_info = await WbKakao.signinForm();
+      let {
+        properties: { nickname },
+        kakao_account: { email, gender }
+      } = user_info;
+
+      try {
+        gender = gender === "mail" ? "M" : "F";
+        const loginResult = await this.socialLogin({
+          email,
+          nickname,
+          gender,
+          platform: "kakao"
+        });
+        console.log(loginResult);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    AuthLogout() {
+      this.logout();
+      // 카카오 로그인 버튼을 생성합니다.
     }
   }
 };
@@ -104,5 +129,8 @@ export default {
 <style>
 #entireBox {
   opacity: 0.9;
+}
+.social-btn {
+  outline: none;
 }
 </style>
