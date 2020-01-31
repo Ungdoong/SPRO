@@ -1,13 +1,13 @@
 <template>
   <div id="singup">
-    <div v-if="notcreated">
+    <div v-if="!notcreated">
       <v-form>
         <v-content>
           <v-container>
             <div id="app">
               <v-app id="inspire">
                 <v-form ref="form" v-model="valid">
-                  <v-card class="mx-auto" max-width="1000">
+                  <v-card class="mx-5" max-width="1000">
                     <br />
 
                     <v-row justify="center"
@@ -112,7 +112,7 @@
 
                   <v-row
                     ><v-col cols="12" sm="12">
-                      <v-card class="px-5 mx-auto" max-width="1000">
+                      <v-card class="px-5 mx-5" max-width="1000">
                         <v-card-text class="pt-0" style="font-size:18px">
                           <p><br /></p>
                           관심있는 분야를 선택해 주세요.
@@ -183,7 +183,7 @@
                   ></v-row>
 
                   <v-card
-                    class="mx-auto"
+                    class="mx-5"
                     max-width="1000"
                     color="rgb(0, 0, 0, 0)"
                     elevation="0"
@@ -200,7 +200,9 @@
                         color="success"
                         @click="onSignup()"
                       >
-                        가입하기
+                        <router-link to="/home">
+                          가입하기
+                        </router-link>
                       </v-btn>
                     </v-layout>
                   </v-card>
