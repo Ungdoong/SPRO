@@ -62,11 +62,11 @@ const routes = [{
                 component: signup
             },
             {
-                path: '/signup/success',
+                path: 'signup/success',
                 component: signupSuccess
             },
             {
-                path: '/mypage',
+                path: 'mypage',
                 component: mypage
             }
         ]

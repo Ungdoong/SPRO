@@ -10,6 +10,10 @@ const SIGNIN = "/signin";
 const SOCIAL_SIGNIN = "/social/signin";
 const CHECK_TOKEN = "/token";
 
+
+// Images
+const IMAGES = "/images"
+
 // Study
 const STUDIES = "/studies";
 const STUDY = "/create";
@@ -56,6 +60,8 @@ const routes = {
     social_signin : SOCIAL_SIGNIN,
     check_token: CHECK_TOKEN,
 
+    images : IMAGES,
+    
     studies : STUDIES,
     study : STUDY,
     study_detail : STUDY_DETAIL,
