@@ -9,6 +9,9 @@ import appFooter from '@/components/common/Footer'
 import intro from '@/views/Intro'
 import home from '@/views/Home'
 
+// 게시판
+import board from '@/components/board/board'
+
 // 유저페이지
 import user from '@/views/User'
 import signup from '@/components/user/Signup'
@@ -50,6 +53,15 @@ const routes = [{
         }
     },
     {
+        path: '/board',
+        name: 'board',
+        components: {
+            header: appHeader,
+            default: board,
+            footer: appFooter
+        }
+    },
+    {
         path: '/user',
         name: 'user',
         components: {
@@ -72,7 +84,7 @@ const routes = [{
         ]
     },
     {
-        path: '/workspace',
+        path: '/workspace/:id',
         name: 'workspace',
         components: {
             header: null,
@@ -95,7 +107,10 @@ const router = new VueRouter({
     mode: 'history',
     linkExactActiveClass: "active",
     base: process.env.BASE_URL,
-    routes
+    routes,
+    scrollBehavior() {
+        return { x: 0, y: 0 }
+    }
 })
 
 export default router
