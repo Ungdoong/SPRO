@@ -30,9 +30,10 @@ class AuthService {
             .then(this.handleResponse)
             .then(
                 response => {
-                    console.log(response)
                     if (response.data.state === 'success') {
+                        AuthHeader.changeHeadersToken()
                         this.setToken(response.data.user)
+                        AuthHeader.changeHeadersToken()
                         return response.data.user;
                     } else {
                         return response.data.user;
