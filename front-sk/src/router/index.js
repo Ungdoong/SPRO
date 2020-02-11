@@ -79,6 +79,7 @@ const routes = [{
             default: postModify,
             footer: appFooter
         },
+        props: true,
     },
     {
         path: '/board/:board',
@@ -93,11 +94,8 @@ const routes = [{
                 path: '?id=:post_id',
                 name: 'post_id',
                 component: postContent,
+                props: true,
             }]
-            // props: (route) => ({
-            //     board: route.board,
-            //     post_id: route.post_id,
-            // }),
     },
     {
         path: '/user',
@@ -113,6 +111,7 @@ const routes = [{
             },
             {
                 path: 'signup',
+                name: 'signup',
                 component: signup
             },
             {
@@ -152,18 +151,16 @@ const routes = [{
     {
         path: '/calendar',
         name: 'calendar',
-        components:{
+        components: {
             header: appHeader,
             default: calendar,
             footer: appFooter
         },
-        children:[
-            {
-                path: 'mycal',
-                name: 'mycal',
-                component: mycal,
-            }
-        ]
+        children: [{
+            path: 'mycal',
+            name: 'mycal',
+            component: mycal,
+        }]
     }
 ]
 
