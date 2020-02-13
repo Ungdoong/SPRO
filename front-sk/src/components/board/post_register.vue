@@ -91,7 +91,7 @@
                     </v-card>
                   </v-dialog>
 
-                  <v-btn class="mx-1 primary" @click="modify">
+                  <v-btn class="mx-1 primary" @click="create">
                     <v-icon left dark>create</v-icon>글 작성
                   </v-btn>
                 </v-col>
@@ -200,14 +200,7 @@ export default {
   },
 
   methods: {
-    async getPost() {
-      const post = await PostService.getPostContents({
-        type: "common",
-        post_id: this.post_id
-      });
-      this.postData = post.data;
-    },
-    modify() {
+    create() {
       this.postData.writer = this.getUser().uid;
       PostService.createPost(this.postData);
       this.$router.go(-1);

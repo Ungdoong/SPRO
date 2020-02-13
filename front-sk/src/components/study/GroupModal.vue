@@ -40,7 +40,9 @@
                 >
               </v-col>
               <v-col class="py-0">
-                <v-content text class="py-0">0 / 6</v-content>
+                <v-content text class="py-0">
+                  {{studyInfo.num_joined_student}}/{{(studyInfo.user_limit == 0)?'-':studyInfo.user_limit}}
+                </v-content>
               </v-col>
             </v-row>
             <hr />
@@ -62,7 +64,7 @@
               </v-col>
               <v-col class="py-0">
                 <v-content text class="py-0">{{
-                  studyInfo.description
+                  (studyInfo.description == '')?'-':studyInfo.description
                 }}</v-content>
               </v-col>
             </v-row>
@@ -139,7 +141,7 @@
               </v-col>
               <v-col class="py-0">
                 <v-content text class="py-0">{{
-                  studyInfo.captain.about
+                  (studyInfo.captain.about == 'null')?'-':studyInfo.captain.about
                 }}</v-content>
               </v-col>
             </v-row>
@@ -170,7 +172,7 @@
             color="primary--text transparent"
             elevation="0"
             @click="regGroup"
-            >가입하기</v-btn
+            >가입신청</v-btn
           >
         </v-card-actions>
       </v-card>
@@ -199,9 +201,13 @@ export default {
   },
   methods: {
     regGroup() {
+      //console.log(this.studyInfo.id);
+      
       StudyService.applyStudy({
         study_id:this.studyInfo.id,
         comment:this.greetComment,
+      }).then(res => {
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAA", res)
       })
     }
   },
