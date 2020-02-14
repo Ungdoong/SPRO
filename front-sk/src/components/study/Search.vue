@@ -1,9 +1,10 @@
 <template>
   <v-content id="contents" class="py-5">
     <v-row class="justify-center">
-      <v-col class="pa-2 col-10 col-md-9">
+      <v-col cols="10">
         <!-- 검색 창 -->
         <v-autocomplete
+          outlined
           :items="recommendItems"
           :loading="isLoading"
           :search-input.sync="searchInput"
@@ -44,7 +45,7 @@
 
     <!-- 상세 검색 -->
     <v-row class="justify-center">
-      <v-col cols="10" class="pa-0">
+      <v-col cols="10" class="px-3 pt-0">
         <v-expansion-panels>
           <v-expansion-panel hover>
             <v-expansion-panel-header>상세검색</v-expansion-panel-header>
@@ -265,9 +266,10 @@
                   <span>{{ item.process_days | filterDays }}</span>
                 </v-col>
                 <v-col cols="6" sm="4" md="2" class="text-center">
-                  <span>{{
-                    (item.start_time + "/" + item.end_time) | times
-                  }}</span>
+                  <span
+                    >{{ item.start_time | times }} ~
+                    {{ item.end_time | times }}</span
+                  >
                 </v-col>
                 <v-col cols="6" sm="2" md="2" class="text-center">
                   <span
@@ -339,7 +341,7 @@
                       <v-btn
                         class="white lighten-3"
                         elevation="0"
-                        @click="groupModal = true, modalItem = item"
+                        @click="(groupModal = true), (modalItem = item)"
                       >
                         <span
                           class="dark--text"
@@ -396,7 +398,7 @@ export default {
       startTime: false,
       endTime: false
     },
-    modalItem: null,
+    modalItem: null
   }),
   props: ["id"],
   components: {
@@ -600,8 +602,6 @@ export default {
       for (var input_day of input) {
         var notMatching = true;
         for (var item_day of item) {
-          console.log('input_day',input_day)
-          console.log('item_day',item_day.day)
           if (input_day == item_day.day) {
             notMatching = false;
             break;
@@ -629,10 +629,11 @@ export default {
   },
   filters: {
     times(value) {
-      let arr = value.split("/");
-      let start = [Math.floor(arr[0] / 100), arr[0] % 100];
-      let end = [Math.floor(arr[1] / 100), arr[1] % 100];
-      return start[0] + ":" + start[1] + " ~ " + end[0] + ":" + end[1];
+      let hour = Math.floor(value / 100);
+      let minute = value % 100;
+      if (hour < 10) hour = "0" + hour;
+      if (minute < 10) minute = "0" + minute;
+      return hour + ":" + minute;
     },
     limit(value) {
       if (value == 0) {
@@ -642,8 +643,8 @@ export default {
     },
 
     filterDays(value) {
-      if(value.length == 1){
-        return value[0].day
+      if (value.length == 1 && value[0].day == "") {
+        return "-";
       }
       var days = "";
       var weekofdays = {
@@ -656,7 +657,7 @@ export default {
         Sun: "일"
       };
       for (var i = 0; i < value.length; i++) {
-        days += weekofdays[value[i].day]+ ' '
+        days += weekofdays[value[i].day] + " ";
       }
 
       return days;
@@ -674,7 +675,6 @@ export default {
     }
 
     await this.loadDeaultList();
-    console.log(this.items);
   }
 };
 </script>
