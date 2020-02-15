@@ -162,7 +162,7 @@
             color="primary--text transparent"
             elevation="0"
             @click="regGroup"
-            >가입하러가기</v-btn
+            >상세페이지로</v-btn
           >
         </v-card-actions>
       </v-card>
