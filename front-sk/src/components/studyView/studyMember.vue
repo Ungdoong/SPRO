@@ -1,5 +1,5 @@
 <template>
-  <v-container style="min-height: 500px">
+  <v-container v-if="isJoined" style="min-height: 500px">
     <v-list v-if="isCaptain">
       <v-toolbar elevation="0" style="border-bottom: 5px solid #736C70;">
         <v-toolbar-title>가입 요청 목록</v-toolbar-title>
@@ -91,12 +91,18 @@
             </p>
           </v-col>
 
-          <v-col align-self="center" align="center" cols="5">
+          <v-col align-self="center" align="center" cols="4">
             <p style="font-size:14px" class="ma-0">
               {{ member.email }}
             </p>
           </v-col>
 
+          <v-col align-self="center" align="center" cols="1">
+            <a>
+            <img src="@/assets/images/post_img.png" v-if="member.id !== currentUser.uid" style="font-size:14px" class="ma-0" @click="viewDetail(member)">
+            </a>
+          </v-col>
+        
           <v-col align="center" cols="3">
             <!-- <v-icon @click="viewGreeting(member)" color="black"
               >more_horiz</v-icon
@@ -166,6 +172,13 @@
           </v-col>
         </v-row>
       </v-list-item>
+        <template>
+          <group-modal
+            :group-modal="groupModal"
+            :user="user"
+            v-on:close="modalClose"
+          />
+        </template>
 
       <modal :open-modal="modal" :close="modalClose">
         <template v-slot:text>
@@ -174,12 +187,20 @@
             v-if="
               modalType != 'delete' &&
                 modalType != 'error' &&
-                modalType != 'selfdel'
+                modalType != 'selfdel' &&
+                modalType != 'greeting'
             "
             >{{ selectedUser.user.nickname }}</span
           >
           {{ modalText[modalType] }}
-          <p v-if="modalType == 'greeting'">{{ selectedUser.comment }}</p>
+
+          <p
+            v-if="modalType == 'greeting'"
+            class="mt-5 pt-2"
+            style="white-space:pre;border-top: 1px solid #262F33;"
+          >
+            {{ selectedUser.comment }}
+          </p>
         </template>
         <template v-slot:btn>
           <div class="text-end pr-3 pb-3">
@@ -232,6 +253,49 @@
       </modal>
     </v-list>
   </v-container>
+
+  <v-container v-else style="min-height:400px">
+    <v-row align="center" style="height:400px;">
+      <v-col cols="12" class="text-center">
+        <div>
+          <span class="display-2 font-weight-thin">Study</span>
+          <span class="display-2">PRO</span>
+        </div>
+
+        <div class="mt-4">
+          <p>"{{ this.studyInfo.name }}" 스터디에 지금 가입하세요!</p>
+          <v-btn text color="green lighten-2" @click="modalOpen"
+            >가입하기</v-btn
+          >
+          <!-- <v-btn text color="error" @click="goBack">이전으로</v-btn> -->
+        </div>
+      </v-col>
+    </v-row>
+    
+
+    <modal :open-modal="modal" v-on:close="modalClose">
+      <template v-slot:toolbar v-if="reg_message == ''">
+        <v-toolbar class="pa-0 customTheme white--text">가입신청</v-toolbar>
+      </template>
+      <template v-slot:text>
+        <div v-show="reg_message == ''">
+          <p>신청글</p>
+          <v-textarea outlined hide-details v-model="comment"></v-textarea>
+        </div>
+        {{ reg_message }}
+      </template>
+      <template v-slot:btn>
+        <div class="text-end pr-3 pb-3">
+          <v-btn elevation="0" @click="regGroup" v-show="reg_message == ''"
+            >가입신청</v-btn
+          >
+          <v-btn elevation="0" @click="modalClose" v-show="reg_message != ''"
+            >확인</v-btn
+          >
+        </div>
+      </template>
+    </modal>
+  </v-container>
 </template>
 
 <script>
@@ -241,10 +305,11 @@ export default {
   props: ["study_id"],
 
   data: () => ({
-    // thisUser: "",
-    // thisCaptain: "",
+    comment: "",
+    reg_message: "",
+    groupModal: false,
 
-    // flag: false,
+
     modal: false,
     modalType: "",
     member: {},
@@ -252,13 +317,15 @@ export default {
     memberList: [],
     studyInfo: {},
     isCaptain: false,
+    isJoined: false,
+
     selectedUser: {
       user: {
         nickname: ""
       }
     },
     modalText: {
-      greeting: "님의 가입인사",
+      greeting: "가입인사",
       accept: "님의 가입 요청을 승인하시겠습니까?",
       decline: "님의 가입 요청을 거절하시겠습니까?",
       delete: "님을 탈퇴시키겠습니까?",
@@ -269,6 +336,18 @@ export default {
 
   async created() {
     await this.loadStudyInfo();
+
+    var res = await StudyService.getStudyInfo({ study_id: this.study_id }).then(
+      res => {
+        return res.data;
+      }
+    );
+    if (res.level) {
+      this.isJoined = true;
+    } else {
+      this.isJoined = false;
+    }
+
     if (this.isCaptain) this.getApplyList();
     this.getjoinedUser();
   },
@@ -292,13 +371,27 @@ export default {
   },
 
   components: {
-    modal: () => import("@/components/base/Modal")
+    modal: () => import("@/components/base/Modal"),
+    GroupModal: () => import("@/components/user/messenger/MsgSendModal")
   },
   methods: {
-    changeLevel(member) {
-      console.log(member.level);
-      console.log(member.id);
-      console.log("clicked..!");
+    modalClose() {
+      this.groupModal = false;
+    },
+
+    viewDetail(user) {
+      this.groupModal = true;
+      this.user = user;
+    },
+
+    async changeLevel(member) {
+      if (!this.isCaptain) {
+        window.alert("스터디장이 아닙니다")
+        return
+      }
+      const level = member.level === 'silver' ? 'gold' : 'silver'
+      await StudyService.changeUserLevel({study_id: this.study_id, user_id: member.id, level: level})
+      location.reload()
     },
 
     confirmAccept(newbie) {
@@ -389,8 +482,29 @@ export default {
       }
     },
 
-    modalClose() {
-      this.modal = false;
+    modalOpen() {
+      this.comment = "";
+      this.modal = true;
+    },
+
+    // clickBack() {
+    //   this.$router.go(-1);
+    // },
+
+    async regGroup() {
+      var payload = {
+        study_id: this.study_id,
+        comment: this.comment
+      };
+
+      var res = await StudyService.applyStudy(payload).then(res => {
+        return res.data;
+      });
+      if (res.state == "success") {
+        this.reg_message = "가입신청을 완료했습니다";
+      } else {
+        this.reg_message = res.data.detail;
+      }
     }
   }
 };
