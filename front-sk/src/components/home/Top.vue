@@ -18,7 +18,7 @@
               elevation="1"
               class="animated fadeInRight card"
               :style="getStyle(item.order)"
-              @click="viewDetail(item)"
+              @click="moveDetail(item)"
             >
               <v-row class="card-img-container" align="center">
                 <v-col class="py-0">
@@ -65,7 +65,7 @@
         threshold: 0.5
       }"
     >
-      <p class="main-title animated bounce" aria-disabled>
+      <p class="main-title animated fadeIn" aria-disabled>
         새로운 모임
       </p>
     </v-lazy>
@@ -191,7 +191,7 @@ export default {
       this.groupModal = true;
     },
     moveDetail(studyInfo) {
-      this.$router.push({ path: "study/", params: { study_id: studyInfo.id } });
+      this.$router.push({ path: 'study/' + studyInfo.id + '/home'});
     },
     modalClose() {
       this.groupModal = false;

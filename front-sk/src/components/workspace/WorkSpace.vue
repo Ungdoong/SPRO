@@ -1,9 +1,5 @@
 <template>
-  <v-card
-    id="workspace_card"
-    flat
-    class="customTheme lighten-2"
-  >
+  <v-card id="workspace_card" flat class="customTheme lighten-2">
     <v-row align="center" justify="center">
       <!-- 상단 탭 버튼 -->
       <v-col class="py-1 pr-1">
@@ -24,6 +20,10 @@
           </v-tab>
 
           <v-card flat>
+            <v-btn class="px-9" height="95" @click="record">
+              <v-icon x-large v-if="!recording" class="material-icons">mdi-record-rec</v-icon>
+              <v-icon x-large v-else class="material-icons">mdi-stop</v-icon>
+            </v-btn>
             <v-btn class="px-9" height="95" @click="help">
               <v-icon large>help_outline</v-icon>
             </v-btn>
@@ -39,11 +39,6 @@
               </v-card>
             </v-row>
           </v-tab-item>
-          <v-tab-item id="NotePad">
-            <v-card outlined>
-              <NotePad :socket="socket" :study_id="study_id" />
-            </v-card>
-          </v-tab-item>
           <v-tab-item id="ViewShare">
             <v-card outlined>
               <ViewShare
@@ -55,16 +50,15 @@
               />
             </v-card>
           </v-tab-item>
+          <v-tab-item id="NotePad">
+            <v-card outlined>
+              <NotePad :socket="socket" :study_id="study_id" />
+            </v-card>
+          </v-tab-item>
         </v-tabs>
       </v-col>
       <!-- 상단 탭 버튼 끝 -->
-      <v-col
-        align="center"
-        justify="center"
-        v-show="talk"
-        cols="3"
-        class="py-1 pl-0 pr-9"
-      >
+      <v-col align="center" justify="center" cols="3" class="py-1 pl-0 pr-9">
         <v-card outlined tile>
           <v-row no-gutters hidden class="pa-0">
             <FaceTalk
@@ -79,12 +73,7 @@
           <v-row no-gutters>
             <v-col cols="12">
               <v-card outlined>
-                <Chatting
-                  class="pa-0 ma-0"
-                  :socket="socket"
-                  :study_id="study_id"
-                  :user="user"
-                />
+                <Chatting class="pa-0 ma-0" :socket="socket" :study_id="study_id" :user="user" />
               </v-card>
             </v-col>
           </v-row>
@@ -142,7 +131,6 @@
         </div>
       </v-img>
     </v-overlay>
-
   </v-card>
 </template>
 
@@ -154,6 +142,10 @@ import ViewShare from "@/components/workspace/ViewShare";
 import FaceTalk from "@/components/workspace/FaceTalk";
 import Chatting from "@/components/workspace/Chatting";
 
+import recordrtc from "recordrtc";
+import saveAs from "file-saver";
+import StudyService from "@/services/study.service";
+
 export default {
   data() {
     return {
@@ -161,10 +153,10 @@ export default {
       socket: "",
       connected_users: [],
       sharing_id: "no one",
-      debuging: true,
-      talk: true,
+      debuging: false,
       current: "board",
-      overlay: false
+      overlay: false,
+      recording: false
     };
   },
 
@@ -210,6 +202,7 @@ export default {
   mounted() {
     window.moveTo(0, 0);
     window.resizeTo(screen.availWidth, screen.availHeight + 100);
+    this.loadStudyInfo();
 
     if (!window.opener) return;
     window.onkeyup = event => {
@@ -232,6 +225,39 @@ export default {
     });
   },
   methods: {
+    async loadStudyInfo() {
+      this.studyInfo = await StudyService.getStudyInfo({
+        study_id: this.study_id
+      }).then(res => {
+        return res.data;
+      });
+    },
+
+    record() {
+      this.recording = !this.recording;
+      if (this.recording) {
+        navigator.mediaDevices
+          .getDisplayMedia({ video: true, audio: true })
+          .then(record_stream => {
+            this.recorder = new recordrtc.RecordRTCPromisesHandler(
+              record_stream,
+              {
+                type: "video",
+                mimeType: "video/webm; codecs=vp9"
+              }
+            );
+            this.recorder.startRecording();
+          });
+      } else {
+        this.recorder.stopRecording().then(data => {
+          const now = new Date();
+          const name = `${
+            this.studyInfo.name
+          } ${now.getFullYear()}-${now.getMonth()}-${now.getDate()} ${now.getHours()}${"'"}${now.getMinutes()}${"''"}`;
+          saveAs(data, name);
+        });
+      }
+    },
     changeView(change_id) {
       this.sharing_id = change_id;
     },
@@ -244,7 +270,7 @@ export default {
     },
 
     exit() {
-      window.opener ? window.opener.closechild() : window.close();
+      window.opener.closechild ? window.opener.closechild() : window.alert("오류가 있습니다 페이지를 직접 종료해주세요")
     },
 
     connected(connected_users) {
@@ -265,5 +291,4 @@ export default {
   min-width: 1530px;
   padding-top: 0px !important;
 }
-
 </style>

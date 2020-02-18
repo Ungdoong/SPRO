@@ -1,7 +1,7 @@
 <template>
   <v-content class="pa-0">
     <v-card flat>
-      <v-card-title class="pb-0">
+      <v-card-title class="pt-0 pb-0">
         <v-row no-gutters>
           <v-col cols="8">
             <v-icon class="black--text pl-1" x-large>notifications_none</v-icon>
@@ -198,7 +198,6 @@ export default {
         offset: 0
       });
       this.post_list = post_list.data;
-      console.log(this.post_list);
     },
     routeTo(post_id) {
       this.$router.push({

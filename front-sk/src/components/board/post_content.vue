@@ -30,7 +30,7 @@
       <v-row no-gutters class="mb-3">
         <v-col cols="12">
           <v-card flat class="pa-3">
-            <span v-html="this.post_contents.content"></span>
+            <Viewer :value="this.post_contents.content" />
           </v-card>
         </v-col>
       </v-row>
@@ -168,8 +168,17 @@
 import PostService from "@/services/post.service";
 import FileService from "@/services/file.service";
 
+import "tui-editor/dist/tui-editor.css";
+import "tui-editor/dist/tui-editor-contents.css";
+import "codemirror/lib/codemirror.css";
+
+import { Viewer } from "@toast-ui/vue-editor";
+
 export default {
   props: ["post_id"],
+  components: {
+    Viewer: Viewer
+  },
   data() {
     return {
       dialog: false,
@@ -185,8 +194,10 @@ export default {
   },
 
   created() {
+    
     this.getPost();
     this.getComment();
+    console.log(this.post_contents);
   },
 
   watch: {
@@ -235,6 +246,8 @@ export default {
         post_id: this.post_id
       });
       this.post_contents = post.data;
+      console.log(this.post_contents);
+      
       if (this.post_contents.like) {
         this.post_contents.num_like--;
       }

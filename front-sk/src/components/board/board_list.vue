@@ -5,7 +5,7 @@
       {{ menuText }}
       <v-btn
         style="float: right;"
-        to="/board/register"
+        @click="register"
         class="mx-1 green white--text"
         v-show="showBtn"
       >
@@ -13,7 +13,7 @@
       </v-btn>
     </v-flex>
     <v-divider class="mx-3 mt-5" />
-    <v-row>
+    <v-row no-gutters>
       <v-col>
         <router-view class="pa-0" />
       </v-col>
@@ -69,7 +69,7 @@
         <v-pagination v-model="page" :length="lastpage" :total-visible="10"></v-pagination>
         <v-btn
           style="float: right;"
-          to="/board/register"
+          @click="register"
           class="mx-1 green white--text"
           v-show="showBtn"
         >
@@ -168,6 +168,12 @@ export default {
         name: "post_id",
         params: { post_id: post_id, board: this.board }
       });
+    },
+    register() {
+      this.$router.push({
+        name: "post_register",
+        params: { board_name: this.board_name },
+      })
     }
   }
 };
