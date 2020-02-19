@@ -77,7 +77,7 @@
                           :event-color="getEventColor"
                           :now="today"
                           :type="type"
-                          @click:event="showEvent"
+                          @click:event="true"
                           @click:more="viewDay"
                           @click:date="viewDay"
                           @change="updateRange"
@@ -132,46 +132,6 @@
                                   </ul>
                                 </div>
                               </div>
-                              <v-dialog
-                                v-model="delOpen"
-                                max-width="400px"
-                                style="overflow:hidden"
-                              >
-                                <v-card class="py-2 px-3">
-                                  <p>정말 삭제하시겠습니까?</p>
-                                  <v-row justify="end">
-                                    <v-btn
-                                      text
-                                      color="dark lighten-2"
-                                      @click="delOpen = false"
-                                      >Cancel</v-btn
-                                    >
-                                    <v-btn
-                                      text
-                                      color="error"
-                                      @click="eventDelete(selectedEvent)"
-                                      >Ok</v-btn
-                                    >
-                                  </v-row>
-                                </v-card>
-                              </v-dialog>
-                              <v-dialog
-                                v-model="userOpen"
-                                max-width="400px"
-                                style="overflow:hidden"
-                              >
-                                <v-card class="py-2 px-3">
-                                  <p>내 일정에 추가했습니다.</p>
-                                  <v-row justify="end">
-                                    <v-btn
-                                      text
-                                      color="dark lighten-2"
-                                      @click="putUserSchedule()"
-                                      >확인</v-btn
-                                    >
-                                  </v-row>
-                                </v-card>
-                              </v-dialog>
                             </v-toolbar>
                             <v-card-text>
                               <p
@@ -205,7 +165,7 @@
 
           <!-- 이슈 -->
           <v-row class="mt-8">
-            <v-col cols="4" v-for="issue in issues" :key="issue.title">
+            <v-col cols="4" v-for="(issue, index) in issues" :key="index">
               <p class="issue-container-title text-center">
                 {{ issue.title }}
               </p>
@@ -234,13 +194,17 @@
                     >
                       <div
                         class="list-group-item"
-                        v-for="item in default_items"
-                        :key="item.id"
+                        v-for="(item, index) in default_items"
+                        :key="index"
                       >
                         <v-card
                           class="issue-card default-card"
-                          :color="item.color"
-                          @click="isUpdate=true, propEvent=item, modal=true"
+                          color="redC"
+                          @click="
+                            (isUpdate = true),
+                              (propEvent = item),
+                              (modal = true)
+                          "
                         >
                           <v-container>
                             <p class="issue-card-text" aria-disabled>
@@ -271,16 +235,21 @@
                     v-bind="dragOptions"
                     @start="drag = true"
                     @end="drag = false"
+                    @change="log($event, issue.title)"
                   >
                     <transition-group
                       type="transition"
                       :name="!drag ? 'flip-list' : null"
                     >
-                      <div v-for="item in issue.items" :key="item.id">
+                      <div v-for="(item, index) in issue.items" :key="index">
                         <v-card
                           class="issue-card list-group-item"
-                          :color="item.color"
-                          @click="isUpdate=true, propEvent=item, modal=true"
+                          :color="getColor(issue.title)"
+                          @click="
+                            (isUpdate = true),
+                              (propEvent = item),
+                              (modal = true)
+                          "
                         >
                           <v-container>
                             <p class="issue-card-text" aria-disabled>
@@ -372,7 +341,9 @@ export default {
         items: []
       }
     ],
-    drag: false
+    drag: false,
+    removed: "",
+    added: ""
   }),
   components: {
     studyCalModal: () => import("@/components/studyView/studyCalModal"),
@@ -466,25 +437,6 @@ export default {
     next() {
       this.$refs.calendar.next();
     },
-    showEvent({ nativeEvent, event }) {
-      const open = () => {
-        this.selectedEvent = event;
-        this.selectedElement = nativeEvent.target;
-        setTimeout(
-          () => ((this.selectedOpen = true), (this.detail = false)),
-          10
-        );
-      };
-
-      if (this.selectedOpen) {
-        this.selectedOpen = false;
-        setTimeout(open, 10);
-      } else {
-        open();
-      }
-
-      nativeEvent.stopPropagation();
-    },
     updateRange({ start, end }) {
       //   const events = [];
 
@@ -568,50 +520,55 @@ export default {
       }
     },
 
-    clickDetailMenu(value, event) {
-      switch (value) {
-        case "movemycal":
-          this.moveMyCal(event);
-          break;
-        case "update":
-          this.loadAddModal(event);
-          break;
-        case "delete":
-          this.delOpen = true;
-          break;
-        default:
+    getColor(title) {
+      let colors = {
+        "할 일": "greenC",
+        "진행 중": "blueC",
+        완료: "greyC"
+      };
+
+      return colors[title];
+    },
+    datesToList(dates){
+      if(dates == '') return []
+      let result = [];
+      let arr = dates.split('/')
+      if(arr.length == 1) return [dates]
+
+      for(let date of arr){
+        result.push(date)
+      }
+      console.log(result)
+      return result
+    },
+    async update(event) {
+      let updateEvent = JSON.parse(JSON.stringify(event));
+      updateEvent.work_id = updateEvent.id
+      updateEvent.dates = this.datesToList(updateEvent.dates)
+      //수정 엑시오스 요청
+      let res = await WorkService.updateWork(updateEvent);
+        console.log(res)
+      if (res.state == "success") {
+        this.reload();
       }
     },
-
-    eventDelete(event) {
-      WorkService.deleteWork({ type: "study", work_id: event.id });
-      const eventsIdx = this.events.indexOf(event);
-      this.events.splice(eventsIdx, 1);
-
-      this.delOpen = false;
-      this.selectedOpen = false;
-      this.$refs.calendar.checkChange();
-    },
-
-    moveMyCal(event) {
-      const name_arr = event.name.split("]");
-      const name = name_arr.length == 2 ? name_arr[1] : name_arr[0];
-
-      WorkService.createWork({
-        type: "personal",
-        study_id: event.study_id,
-        group: "study " + event.status,
-        name: name,
-        content: event.content,
-        start: event.start_date,
-        end: event.end_date,
-        color: event.color
-      });
-      this.userOpen = true;
-    },
-    putUserSchedule() {
-      this.selectedOpen = false;
-      this.userOpen = false;
+    log(evt, title) {
+      if (evt.added) {
+        this.added = title;
+        if (this.removed != "") {
+          evt.added.element.status = title;
+          this.update(evt.added.element);
+          this.removed = "";
+        }
+      }
+      if (evt.removed) {
+        this.removed = title;
+        if (this.added != "") {
+          evt.removed.element.status = this.added;
+          this.update(evt.removed.element)
+          this.added = "";
+        }
+      }
     }
   },
   filters: {

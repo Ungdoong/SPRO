@@ -170,7 +170,7 @@
             color="error lighten-2"
             @click="deleteCard"
             v-if="isUpdate"
-            :disabled="isLoading || isDefault"
+            :disabled="isLoading"
           >
             삭제
           </v-btn>
@@ -211,7 +211,6 @@ export default {
   data: () => ({
     open: false,
     isLoading: false,
-    isDefault: false,
 
     active: {
       dates: false,
@@ -243,16 +242,13 @@ export default {
     isUpdate() {
       if (this.isUpdate) {
         this.input = {
-          dates: this.propEvent.dates,
+          dates: this.datesToList(this.propEvent.dates),
           startTime: this.propEvent.start_time,
           endTime: this.propEvent.end_time,
           name: this.propEvent.name,
           content: this.propEvent.content,
           isDefault: false
         };
-        if (this.propEvent.status == "초기") {
-          this.isDefault = true;
-        }
       }
     }
   },
@@ -269,6 +265,18 @@ export default {
         isDefault: false
       };
       this.$emit("close");
+    },
+
+    datesToList(dates){
+      if(dates == '') return []
+      let result = [];
+      let arr = dates.split('/')
+      if(arr.length == 1) return [dates]
+
+      for(let date of arr){
+        result.push(date)
+      }
+      return result
     },
 
     async create() {
@@ -314,11 +322,12 @@ export default {
         dates: this.input.dates,
         start_time: this.input.startTime,
         end_time: this.input.endTime,
-        color: this.input.isDefault ? "redC" : "greenC",
-        status: this.input.isDefault ? "기본" : "할 일"
+        status: this.input.isDefault ? "기본" : "할 일",
+        color: '',
       };
       //데이터추가 엑시오스
       let res = await WorkService.createWork(newEvent);
+      console.log(res)
       if (res.id) {
         this.$emit("reload");
         this.close();
@@ -339,7 +348,6 @@ export default {
         dates: this.input.dates,
         start_time: this.input.startTime,
         end_time: this.input.endTime,
-        color: this.propEvent.color,
         status: this.propEvent.status
       };
 
@@ -361,7 +369,6 @@ export default {
         work_id: this.propEvent.id
       };
       let res = await WorkService.deleteWork(payload);
-      console.log(res);
       if (res.state == "sucess") {
         this.$emit("reload");
         this.close();
