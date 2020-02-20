@@ -150,16 +150,20 @@
           </v-row>
           <!-- 내용입력 끝 -->
           <!-- 이름/내용 입력 끝 -->
-          <!-- 기본일정 체크박스 -->
-          <v-row v-show="!isUpdate">
-            <v-col class="py-0 justify-end">
-              <v-checkbox v-model="input.isDefault" label="기본일정으로 등록" />
-            </v-col>
-          </v-row>
-          <!-- 기본일정 체크박스 끝 -->
         </v-col>
       </v-row>
       <!-- 내용입력란 끝 -->
+
+      <!-- 참여인원 -->
+      <v-row v-show="isUpdate" justify="center">
+        <v-col cols="10">
+          <v-card class="pa-2" elevation="1">
+            <span>현재 참여인원</span><br />
+            <span class="primary--text pl-2">{{ propEvent.members }}</span>
+          </v-card>
+        </v-col>
+      </v-row>
+      <!-- 참여인원 끝 -->
 
       <!-- 버튼 -->
       <v-row justify="end" class="mb-2">
@@ -170,7 +174,6 @@
             color="error lighten-2"
             @click="deleteCard"
             v-if="isUpdate"
-            :disabled="isLoading"
           >
             삭제
           </v-btn>
@@ -179,7 +182,6 @@
             color="primary lighten-2"
             @click="create"
             v-if="!isUpdate"
-            :disabled="isLoading"
           >
             만들기
           </v-btn>
@@ -188,17 +190,22 @@
             color="primary lighten-2"
             @click="update"
             v-else
-            :disabled="isLoading || isDefault"
+            :disabled="isLoading"
           >
             수정
           </v-btn>
-          <v-btn text color="lighten-2" @click="close" :disabled="isLoading">
+          <v-btn text color="lighten-2" @click="close">
             취소
           </v-btn>
         </v-col>
       </v-row>
       <!-- 버튼 끝 -->
     </v-card>
+    <modal :open-modal="errorModal" v-on:close="errorModal = false">
+      <template v-slot:text>
+        <span>해당시간에 나의 일정이 있습니다</span>
+      </template>
+    </modal>
   </v-dialog>
 </template>
 
@@ -227,9 +234,13 @@ export default {
       isDefault: false
     },
     event_id: "",
-    message: ""
+    message: "",
+    errorModal: false
   }),
   props: ["addModal", "isUpdate", "propEvent", "study_id"],
+  components: {
+    modal: () => import("@/components/base/Modal")
+  },
   watch: {
     addModal() {
       this.open = this.addModal;
@@ -242,7 +253,7 @@ export default {
     isUpdate() {
       if (this.isUpdate) {
         this.input = {
-          dates: this.datesToList(this.propEvent.dates),
+          dates: this.propEvent.dates,
           startTime: this.propEvent.start_time,
           endTime: this.propEvent.end_time,
           name: this.propEvent.name,
@@ -255,7 +266,7 @@ export default {
   methods: {
     close() {
       this.message = "";
-      this.isDefault = false;
+      this.isLoading = false;
       this.input = {
         dates: [],
         startTime: "",
@@ -267,16 +278,16 @@ export default {
       this.$emit("close");
     },
 
-    datesToList(dates){
-      if(dates == '') return []
+    datesToList(dates) {
+      if (dates == "") return [];
       let result = [];
-      let arr = dates.split('/')
-      if(arr.length == 1) return [dates]
+      let arr = dates.split("/");
+      if (arr.length == 1) return [dates];
 
-      for(let date of arr){
-        result.push(date)
+      for (let date of arr) {
+        result.push(date);
       }
-      return result
+      return result;
     },
 
     async create() {
@@ -322,19 +333,77 @@ export default {
         dates: this.input.dates,
         start_time: this.input.startTime,
         end_time: this.input.endTime,
-        status: this.input.isDefault ? "기본" : "할 일",
-        color: '',
+        status: this.input.isDefault ? "기본" : "준비"
       };
+
+      if (!(await this.enterIssue(newEvent))) return;
       //데이터추가 엑시오스
       let res = await WorkService.createWork(newEvent);
-      console.log(res)
-      if (res.id) {
+      if (res.state == 'success') {
         this.$emit("reload");
         this.close();
       } else {
         this.message = "생성하지 못했습니다.";
       }
       this.isLoading = false;
+    },
+    isLaterLeftTime(time1, time2) {
+      let arr1 = time1.split(":");
+      let arr2 = time2.split(":");
+      let left = {
+        hour: arr1[0],
+        minute: arr1[1]
+      };
+      let right = {
+        hour: arr2[0],
+        minute: arr2[1]
+      };
+
+      if (left.hour > right.hour) {
+        return true;
+      } else if (left.hour == right.hour && left.minute >= right.minute) {
+        return true;
+      }
+
+      return false;
+    },
+    async enterIssue(item) {
+      let payload = {
+        type: "personal"
+      };
+      let myIssues = await WorkService.getWorks(payload);
+      
+      // 시간겹치는지 체크
+      for (let issue of myIssues) {
+        issue.dates = this.datesToList(issue.dates)
+        if (issue.dates.length == 0) continue;
+
+        for (let date1 of issue.dates) {
+          for (let date2 of item.dates) {
+            if (date1 == date2) {
+              if (
+                (this.isLaterLeftTime(item.start_time, issue.start_time) &&
+                  this.isLaterLeftTime(issue.end_time, item.start_time)) ||
+                (this.isLaterLeftTime(item.end_time, issue.start_time) &&
+                  this.isLaterLeftTime(issue.end_time, item.end_time))
+              ) {
+                this.errorModal = true;
+                return false;
+              }
+            }
+          }
+        }
+      }
+      
+      // 내일정으로 생성
+      let copy = JSON.parse(JSON.stringify(item));
+      copy.type = "personal";
+      let res = await WorkService.createWork(copy);
+      if(res.state == 'success'){
+        return true;
+      }
+
+      return false;
     },
 
     async update() {
@@ -348,9 +417,8 @@ export default {
         dates: this.input.dates,
         start_time: this.input.startTime,
         end_time: this.input.endTime,
-        status: this.propEvent.status
+        status: this.propEvent.status,
       };
-
       //수정 엑시오스 요청
       let res = await WorkService.updateWork(updateEvent);
       if (res.state == "success") {
@@ -369,7 +437,7 @@ export default {
         work_id: this.propEvent.id
       };
       let res = await WorkService.deleteWork(payload);
-      if (res.state == "sucess") {
+      if (res.state == "success") {
         this.$emit("reload");
         this.close();
       } else {
